@@ -2,32 +2,47 @@ import React, { useEffect, useState } from 'react';
 import GuestListTable from '../components/GuestListTable';
 import styled from 'styled-components';
 
+// Define la interfaz para los datos de la invitación, ajusta según tu backend
+interface Invitation {
+  id: string;
+  names: string;
+  date: string;
+  // Agrega más campos si es necesario
+}
+
 const PageContainer = styled.div`
   padding: 2rem;
   background-color: var(--color-bg-primary, #F4F2F0);
+  display: flex;
+  flex-direction: column;
+  gap: 3rem; /* Aumenta el espacio entre las tablas de invitados */
+`;
+
+const InvitationSection = styled.div`
+  /* Contenedor para cada invitación y su tabla de invitados */
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--color-accent-primary);
+  }
 `;
 
 const MyInvitationsPage: React.FC = () => {
-  const [invitationId, setInvitationId] = useState<string | null>(null);
+  // Cambiamos el estado para guardar un array de invitaciones
+  const [invitations, setInvitations] = useState<Invitation[]>([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserInvitations = async () => {
-      const token = localStorage.getItem('sessionToken'); // Asumiendo que el token se guarda aquí
-
+      const token = localStorage.getItem('sessionToken'); 
       if (!token) {
-        console.log('DEBUG: No se encontró token de sesión en localStorage.');
         setError('No hay token de sesión. Por favor, inicia sesión.');
         setLoading(false);
         return;
       }
-      console.log('DEBUG: Token de sesión encontrado:', token);
 
       try {
         const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-        const url = `${API_BASE_URL}/api/my-invitations`;
-        console.log('DEBUG: Intentando conectar a la URL:', url);
         const response = await fetch(`${API_BASE_URL}/api/my-invitations`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -40,24 +55,17 @@ const MyInvitationsPage: React.FC = () => {
           throw new Error(errorData.error || 'Error al cargar las invitaciones del usuario.');
         }
 
-        const data = await response.json();
-        console.log('DEBUG: Respuesta del backend /api/my-invitations:', data);
-        if (Array.isArray(data) && data.length > 0) { // Verificar si se recibió un array y no está vacío
-          setInvitationId(data[0].id); // Tomar el ID de la primera invitación
-          console.log('DEBUG: invitationId establecido:', data[0].id);
-        } else {
-          setError('No se encontraron invitaciones para este usuario.');
-          console.log('DEBUG: No se encontraron invitaciones para el usuario.');
-        }
+        const data: Invitation[] = await response.json();
+        
+        // Guardamos todo el array de invitaciones en el estado
+        setInvitations(data); 
+
       } catch (err: any) {
-        console.error('DEBUG: Error en fetchUserInvitations:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
-        console.log('DEBUG: Carga de invitaciones finalizada. Loading:', false);
       }
     };
-
     fetchUserInvitations();
   }, []);
 
@@ -69,13 +77,22 @@ const MyInvitationsPage: React.FC = () => {
     return <PageContainer>Error: {error}</PageContainer>;
   }
 
+  // Si no hay invitaciones, muestra un mensaje
+  if (invitations.length === 0) {
+    return <PageContainer><p>No tienes invitaciones asociadas a tu cuenta. <a href="/crear-invitacion">¡Crea una ahora!</a></p></PageContainer>;
+  }
+
   return (
     <PageContainer>
-      {invitationId ? (
-        <GuestListTable invitationId={invitationId} />
-      ) : (
-        <p>No tienes invitaciones asociadas a tu cuenta.</p>
-      )}
+      {/* Mapea el array de invitaciones para renderizar una sección por cada una */}
+      {invitations.map((inv) => (
+        <InvitationSection key={inv.id}>
+          {/* Muestra un título para cada invitación, por ejemplo, el nombre de la pareja */}
+          <h2>Invitados para: {inv.names}</h2>
+          {/* Renderiza el componente de la tabla de invitados, pasando el ID de la invitación actual */}
+          <GuestListTable invitationId={inv.id} />
+        </InvitationSection>
+      ))}
     </PageContainer>
   );
 };
