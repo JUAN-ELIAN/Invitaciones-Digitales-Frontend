@@ -26,6 +26,8 @@ const MyInvitationsPage: React.FC = () => {
 
       try {
         const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+        const url = `${API_BASE_URL}/api/my-invitations`;
+        console.log('DEBUG: Intentando conectar a la URL:', url);
         const response = await fetch(`${API_BASE_URL}/api/my-invitations`, {
           headers: {
             'Authorization': `Bearer ${token}`,
