@@ -54,6 +54,10 @@ const StyledTable = styled.table`
   tbody tr:hover {
     background-color: #f5f5f5;
   }
+  // Estilo para filas alternas (impares)
+  tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
 `;
 
 const TotalCount = styled.div`
@@ -62,6 +66,12 @@ const TotalCount = styled.div`
   color: var(--color-accent-primary);
   margin-top: 20px;
   text-align: right;
+`;
+
+// Nuevo componente para el título de la tabla
+const StyledTitle = styled.h3`
+  font-weight: bold;
+  color: var(--color-text-primary);
 `;
 
 const DownloadButtonContainer = styled.div`
@@ -77,7 +87,6 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
   useEffect(() => {
     const fetchRsvps = async () => {
-      // --- Inicio de depuración ---
       console.log('DEBUG (GuestListTable): Inicia carga de RSVPs para invitationId:', invitationId);
       const token = localStorage.getItem('sessionToken');
       if (!token) {
@@ -86,7 +95,6 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
         setLoading(false);
         return;
       }
-      // --- Fin de depuración ---
       
       try {
         const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -104,12 +112,10 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
         const data = await response.json();
         
-        // --- Inicio de depuración ---
         console.log('DEBUG (GuestListTable): Respuesta de /api/rsvps:', data);
         if (data.rsvps) {
           console.log('DEBUG (GuestListTable): RSVPs recibidos:', data.rsvps.length, 'registros.');
         }
-        // --- Fin de depuración ---
 
         setRsvps(data.rsvps || []);
         setTotalParticipants(data.participants_count || 0);
@@ -126,11 +132,29 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
   }, [invitationId]);
 
   const handleDownload = () => {
-    // Lógica para descargar Excel (mantener)
+    // Lógica para descargar Excel
     const headers = ['Nombres', 'Participantes', 'Email', 'Teléfono', 'Observaciones', 'Asistencia Confirmada'];
     const csvContent = headers.join(';') + '\n' + rsvps.map(e => {
-      // Asegurarse de que los nombres se exportan como texto plano
-      const names = Array.isArray(e.names) ? e.names.join(', ') : e.names;
+      // Formatear los nombres para que se muestren como una cadena separada por comas
+      let names = 'N/A';
+      if (Array.isArray(e.names)) {
+        names = e.names.join(', ');
+      } else if (e.names) {
+        try {
+          const parsedNames = JSON.parse(e.names as string);
+          if (Array.isArray(parsedNames)) {
+            names = parsedNames.join(', ');
+          } else {
+            names = e.names;
+          }
+        } catch (error) {
+          names = e.names;
+        }
+      }
+      
+      // Eliminar comillas dobles al inicio y final del string si existen
+      names = names.replace(/^"|"$/g, '');
+
       return [
         `"${names}"`,
         e.participants_count,
@@ -161,7 +185,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
   return (
     <TableContainer>
-      <h3>Invitados Confirmados ({totalParticipants} personas)</h3>
+      <StyledTitle>Invitados Confirmados ({totalParticipants} personas)</StyledTitle>
       {rsvps.length === 0 ? (
         <p>No hay invitados registrados para esta invitación.</p>
       ) : (
