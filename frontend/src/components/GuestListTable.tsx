@@ -1,6 +1,19 @@
+// GuestListTable.tsx
+
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Button from './Button';
+
+// Define la interfaz para los datos de RSVP
+interface Rsvp {
+  names: string | string[]; // Puede ser un array o una cadena
+  participants_count: number;
+  email?: string;
+  phone?: string;
+  observations?: string;
+  confirmed_attendance: boolean;
+  not_attending: boolean;
+}
 
 interface GuestListTableProps {
   invitationId: string;
@@ -11,13 +24,12 @@ const TableContainer = styled.div`
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  margin: 50px auto 30px auto; /* Aumentado el margen superior para bajar la tabla */
+  margin: 50px auto 30px auto; 
   max-width: 90%;
-  overflow-x: auto; /* Permite el scroll horizontal en pantallas pequeñas */
-
+  overflow-x: auto; 
   @media (max-width: 768px) {
     padding: 10px;
-    margin-top: 30px; /* Ajuste para pantallas más pequeñas */
+    margin-top: 30px;
   }
 `;
 
@@ -25,33 +37,33 @@ const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-
   th,
   td {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #ddd;
     color: var(--color-text-secondary);
-
     @media (max-width: 768px) {
-      padding: 8px 10px; /* Reducir padding en pantallas pequeñas */
-      font-size: 0.9em; /* Reducir tamaño de fuente */
+      padding: 8px 10px;
+      font-size: 0.8rem;
     }
   }
-
   th {
-    background-color: var(--color-accent-primary);
-    color: white;
+    background-color: #f2f2f2;
     font-weight: bold;
+    color: var(--color-text-primary);
   }
+  tbody tr:hover {
+    background-color: #f5f5f5;
+  }
+`;
 
-  tr:nth-child(even) {
-    background-color: #f9f9f9; /* Ligeramente diferente para alternar filas */
-  }
-
-  tr:hover {
-    background-color: #f1f1f1;
-  }
+const TotalCount = styled.div`
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--color-accent-primary);
+  margin-top: 20px;
+  text-align: right;
 `;
 
 const DownloadButtonContainer = styled.div`
@@ -60,103 +72,139 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
-  const [rsvps, setRsvps] = useState<any[]>([]);
+  const [rsvps, setRsvps] = useState<Rsvp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalParticipants, setTotalParticipants] = useState(0);
 
   useEffect(() => {
     const fetchRsvps = async () => {
+      // --- Inicio de depuración ---
+      console.log('DEBUG (GuestListTable): Inicia carga de RSVPs para invitationId:', invitationId);
+      const token = localStorage.getItem('sessionToken');
+      if (!token) {
+        console.error('DEBUG (GuestListTable): No se encontró token de sesión.');
+        setError('No hay token de sesión.');
+        setLoading(false);
+        return;
+      }
+      // --- Fin de depuración ---
+      
       try {
-        const response = await fetch(`https://invitaciones-digitales-backend.vercel.app/api/rsvps/${invitationId}`);
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+        const response = await fetch(`${API_BASE_URL}/api/rsvps/${invitationId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
         if (!response.ok) {
-          throw new Error('Error al cargar la lista de invitados.');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al cargar la lista de invitados.');
         }
+
         const data = await response.json();
-        setRsvps(data);
+        
+        // --- Inicio de depuración ---
+        console.log('DEBUG (GuestListTable): Respuesta de /api/rsvps:', data);
+        if (data.rsvps) {
+          console.log('DEBUG (GuestListTable): RSVPs recibidos:', data.rsvps.length, 'registros.');
+        }
+        // --- Fin de depuración ---
+
+        setRsvps(data.rsvps || []);
+        setTotalParticipants(data.participants_count || 0);
+
       } catch (err: any) {
+        console.error('DEBUG (GuestListTable): Error en fetchRsvps:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
+        console.log('DEBUG (GuestListTable): Carga de RSVPs finalizada. Loading:', false);
       }
     };
-
-    if (invitationId) {
-      fetchRsvps();
-    }
+    fetchRsvps();
   }, [invitationId]);
 
-  const handleDownload = async () => {
-    try {
-      const response = await fetch(`https://invitaciones-digitales-backend.vercel.app/api/rsvps/download/${invitationId}`);
-      if (!response.ok) {
-        throw new Error('Error al descargar el archivo.');
-      }
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invitados_${invitationId}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-    } catch (err: any) {
-      console.error('DEBUG Frontend: Error al intentar descargar el Excel:', err.message);
-      setError(err.message);
-    }
+  const handleDownload = () => {
+    // Lógica para descargar Excel (mantener)
+    const headers = ["Nombres", "Participantes", "Email", "Teléfono", "Observaciones", "Asistencia Confirmada"];
+    const csvContent = headers.join(";") + "\n" + rsvps.map(e => {
+        // Asegurarse de que los nombres se exportan como texto plano
+        const names = Array.isArray(e.names) ? e.names.join(', ') : e.names;
+        return [
+            `"${names}"`,
+            e.participants_count,
+            `"${e.email || 'N/A'}"`,
+            `"${e.phone || 'N/A'}"`,
+            `"${e.observations || 'N/A'}"`,
+            `"${e.confirmed_attendance ? 'Sí' : 'No'}"`
+        ].join(";");
+    }).join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `invitados_evento_${invitationId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) {
-    return <TableContainer>Cargando lista de invitados...</TableContainer>;
+    return <TableContainer>Cargando invitados...</TableContainer>;
   }
 
   if (error) {
-    return <TableContainer>Error: {error}</TableContainer>;
+    return <TableContainer>Error al cargar la lista de invitados: {error}</TableContainer>;
   }
 
   return (
     <TableContainer>
-      <h2>Lista de Invitados</h2>
+      <h3>Invitados Confirmados ({totalParticipants} personas)</h3>
       {rsvps.length === 0 ? (
-        <p>No hay invitados confirmados aún.</p>
+        <p>No hay invitados registrados para esta invitación.</p>
       ) : (
         <StyledTable>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Participantes</th>
+              <th>Nombres</th>
+              <th>Cant.</th>
               <th>Email</th>
               <th>Teléfono</th>
               <th>Observaciones</th>
-              <th>Confirmado</th>
+              <th>Asistencia</th>
             </tr>
           </thead>
           <tbody>
-            {rsvps.map((rsvp) => (
-              <tr key={rsvp.id}>
+            {rsvps.map((rsvp: Rsvp, index: number) => (
+              <tr key={index}>
                 <td>
+                  {/* Lógica para manejar nombres como array o string JSON */}
                   {Array.isArray(rsvp.names) ? (
                     rsvp.names.map((name: string, i: number) => (
                       <div key={i}>{name}</div>
                     ))
                   ) : (
-                    // Si no es un array, intentar parsear como JSON o mostrar directamente
                     (() => {
                       try {
-                        const parsedNames = JSON.parse(rsvp.names);
+                        const parsedNames = JSON.parse(rsvp.names as string);
                         if (Array.isArray(parsedNames)) {
                           return parsedNames.map((name: string, i: number) => (
                             <div key={i}>{name}</div>
                           ));
                         }
                       } catch (e) {
-                        // No es JSON válido, mostrar como texto plano
+                        // El formato no es un array JSON, lo renderizamos como string
                       }
                       return rsvp.names || 'N/A';
                     })()
                   )}
                 </td>
                 <td>{rsvp.participants_count}</td>
-                <td>{rsvp.email}</td>
+                <td>{rsvp.email || 'N/A'}</td>
                 <td>{rsvp.phone || 'N/A'}</td>
                 <td>{rsvp.observations || 'N/A'}</td>
                 <td>{rsvp.confirmed_attendance ? 'Sí' : 'No'}</td>
