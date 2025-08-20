@@ -1,5 +1,3 @@
-// GuestListTable.tsx
-
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Button from './Button';
@@ -129,8 +127,8 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
   const handleDownload = () => {
     // Lógica para descargar Excel (mantener)
-    const headers = ["Nombres", "Participantes", "Email", "Teléfono", "Observaciones", "Asistencia Confirmada"];
-    const csvContent = headers.join(";") + "\n" + rsvps.map(e => {
+    const headers = ['Nombres', 'Participantes', 'Email', 'Teléfono', 'Observaciones', 'Asistencia Confirmada'];
+    const csvContent = headers.join(';') + '\n' + rsvps.map(e => {
         // Asegurarse de que los nombres se exportan como texto plano
         const names = Array.isArray(e.names) ? e.names.join(', ') : e.names;
         return [
@@ -140,14 +138,14 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
             `"${e.phone || 'N/A'}"`,
             `"${e.observations || 'N/A'}"`,
             `"${e.confirmed_attendance ? 'Sí' : 'No'}"`
-        ].join(";");
-    }).join("\n");
+        ].join(';');
+    }).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `invitados_evento_${invitationId}.csv`);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `invitados_evento_${invitationId}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
