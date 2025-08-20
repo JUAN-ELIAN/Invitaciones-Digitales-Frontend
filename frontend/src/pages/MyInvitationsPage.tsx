@@ -25,8 +25,8 @@ const MyInvitationsPage: React.FC = () => {
       console.log('DEBUG: Token de sesión encontrado:', token);
 
       try {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-        const response = await fetch(`${API_BASE_URL}/api/my-invitations`, {
+        //const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+        const response = await fetch(`https://invitaciones-digitales-backend.vercel.app/api/my-invitations`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
