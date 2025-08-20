@@ -66,7 +66,7 @@ const TotalCount = styled.div`
 
 // Nuevo componente para el título de la tabla
 const StyledTitle = styled.h3`
-  font-family: 'Dancing Script', cursive;
+  font-family: serif;
   font-size: 2em; /* Puedes ajustar el tamaño si lo necesitas */
   font-weight: bold;
   color: var(--color-accent-primary);
