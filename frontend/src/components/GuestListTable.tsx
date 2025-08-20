@@ -129,16 +129,16 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
     // Lógica para descargar Excel (mantener)
     const headers = ['Nombres', 'Participantes', 'Email', 'Teléfono', 'Observaciones', 'Asistencia Confirmada'];
     const csvContent = headers.join(';') + '\n' + rsvps.map(e => {
-        // Asegurarse de que los nombres se exportan como texto plano
-        const names = Array.isArray(e.names) ? e.names.join(', ') : e.names;
-        return [
-            `"${names}"`,
-            e.participants_count,
-            `"${e.email || 'N/A'}"`,
-            `"${e.phone || 'N/A'}"`,
-            `"${e.observations || 'N/A'}"`,
-            `"${e.confirmed_attendance ? 'Sí' : 'No'}"`
-        ].join(';');
+      // Asegurarse de que los nombres se exportan como texto plano
+      const names = Array.isArray(e.names) ? e.names.join(', ') : e.names;
+      return [
+        `"${names}"`,
+        e.participants_count,
+        `"${e.email || 'N/A'}"`,
+        `"${e.phone || 'N/A'}"`,
+        `"${e.observations || 'N/A'}"`,
+        `"${e.confirmed_attendance ? 'Sí' : 'No'}"`
+      ].join(';');
     }).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
