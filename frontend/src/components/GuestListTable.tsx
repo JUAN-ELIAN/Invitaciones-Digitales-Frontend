@@ -54,10 +54,6 @@ const StyledTable = styled.table`
   tbody tr:hover {
     background-color: #f5f5f5;
   }
-  // Estilo para filas alternas (impares)
-  tbody tr:nth-child(odd) {
-    background-color: #f9f9f9;
-  }
 `;
 
 const TotalCount = styled.div`
@@ -70,8 +66,11 @@ const TotalCount = styled.div`
 
 // Nuevo componente para el título de la tabla
 const StyledTitle = styled.h3`
+  font-family: 'Dancing Script', cursive;
+  font-size: 2em; /* Puedes ajustar el tamaño si lo necesitas */
   font-weight: bold;
-  color: var(--color-text-primary);
+  color: var(--color-accent-primary);
+  margin-bottom: 1rem;
 `;
 
 const DownloadButtonContainer = styled.div`
