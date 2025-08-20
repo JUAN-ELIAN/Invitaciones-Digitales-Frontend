@@ -482,7 +482,7 @@ const WeddingInvitation: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://invitaciones-digitales-backend.vercel.app//api/rsvp', {
+      const response = await fetch('https://invitaciones-digitales-backend.vercel.app/api/rsvp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
