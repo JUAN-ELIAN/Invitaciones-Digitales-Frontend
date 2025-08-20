@@ -138,7 +138,7 @@ const Header: React.FC = () => {
   const handleLoginSuccess = (sessionToken: string) => {
     localStorage.setItem('sessionToken', sessionToken);
     updateUserStateFromToken(sessionToken);
-    setShowLoginModal(false);
+    setShowLoginModal(true);
     navigate('/my-invitations'); // Redirigir a la URL de la plantilla
   };
 
