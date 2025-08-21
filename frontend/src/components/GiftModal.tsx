@@ -111,13 +111,19 @@ const GiftModal: React.FC<GiftModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay>
-      <ModalContent ref={modalRef}>
+    <ModalOverlay onClick={onClose}>
+      <ModalContent ref={modalRef} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <FormTitle>Datos de Transferencia</FormTitle>
         <div>
           <BankDetail>
             <span>Titular: Gladys Vanesa Bejarano</span>
+          </BankDetail>
+          <BankDetail>
+            <span>Celular: 1156349703</span>
+            <CopyIcon onClick={() => copyToClipboard('1156349703')}>
+              {IoIosCopy({})}
+            </CopyIcon>
           </BankDetail>
           <BankDetail>
             <span>CBU: 4530000800011022236593</span>
@@ -136,7 +142,7 @@ const GiftModal: React.FC<GiftModalProps> = ({ isOpen, onClose }) => {
           </BankDetail>
           <BankDetail>
             <span>Banco: Naranja X</span>
-          </BankDetail>
+          </BankDetail>          
         </div>
         <Button type="button" $success onClick={onClose} style={{ marginTop: '20px' }}>Gracias</Button>
       </ModalContent>

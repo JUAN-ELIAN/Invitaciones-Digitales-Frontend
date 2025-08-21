@@ -19,7 +19,7 @@ const ModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 `;
 
 const ModalContent = styled.div`
@@ -204,8 +204,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ $show, onClose, onLoginSuccess,
   }
 
   return (
-    <ModalOverlay>
-      <ModalContent ref={modalRef}>
+    <ModalOverlay onClick={onClose}>
+      <ModalContent ref={modalRef} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <Title>{isRegisterView ? 'Solicitar Acceso' : 'Iniciar Sesión'}</Title>
 

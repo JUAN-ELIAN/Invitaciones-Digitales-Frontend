@@ -14,6 +14,7 @@ interface RsvpFormData {
   email: string;
   phone?: string;
   observations?: string;
+  song_suggestions?: string;
   confirmed_attendance: boolean;
   not_attending: boolean;
 }
@@ -123,6 +124,7 @@ const RsvpFormModal: React.FC<RsvpFormModalProps> = ({ isOpen, onClose, onSubmit
     email: '',
     phone: '',
     observations: '',
+    song_suggestions: '',
     confirmed_attendance: false,
     not_attending: false,
   });
@@ -216,8 +218,8 @@ const RsvpFormModal: React.FC<RsvpFormModalProps> = ({ isOpen, onClose, onSubmit
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay>
-      <ModalContent ref={modalRef}>
+    <ModalOverlay onClick={onClose}>
+      <ModalContent ref={modalRef} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <FormTitle>Confirmar Asistencia</FormTitle>
         <form onSubmit={handleSubmit}>
@@ -277,6 +279,17 @@ const RsvpFormModal: React.FC<RsvpFormModalProps> = ({ isOpen, onClose, onSubmit
               value={formData.observations}
               onChange={handleChange}
               rows={3}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="song_suggestions">Sugerencias de Canciones (opcional):</Label>
+            <TextArea
+              id="song_suggestions"
+              name="song_suggestions"
+              value={formData.song_suggestions}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Ej.: Artista - Canción"
             />
           </FormGroup>
           <CheckboxContainer>

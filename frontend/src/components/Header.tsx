@@ -168,6 +168,27 @@ const Header: React.FC = () => {
     setShowDropdown(false);
   };
 
+  const handleShareInvitation = () => {
+    const base = window.location.origin;
+    const isInvitation = location.pathname.startsWith('/invitacion/');
+    const shareUrl = isInvitation ? window.location.href : `${base}/invitacion/boda-elegante`;
+    const shareText = 'Te comparto nuestra invitación';
+
+    if ((navigator as any).share) {
+      (navigator as any)
+        .share({ title: 'Nuestra Boda', text: shareText, url: shareUrl })
+        .catch(() => {
+          const waUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}: ${shareUrl}`)}`;
+          window.open(waUrl, '_blank');
+        });
+    } else {
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}: ${shareUrl}`)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    setShowDropdown(false);
+  };
+
   const getTitle = () => {
     if (location.pathname === '/guest-management') {
       return 'Invitados';
@@ -192,6 +213,7 @@ const Header: React.FC = () => {
               <DropdownContent $show={showDropdown}>
                 {userEmail && <DropdownEmail>{userEmail}</DropdownEmail>}
                 <DropdownItem onClick={handleMyInvitations}>Mis Invitaciones</DropdownItem>
+                <DropdownItem onClick={handleShareInvitation}>Compartir invitación</DropdownItem>
                 <DropdownItem onClick={handleLogout}>Cerrar Sesión</DropdownItem>
               </DropdownContent>
             </DropdownContainer>

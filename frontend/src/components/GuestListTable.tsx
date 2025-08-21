@@ -9,6 +9,7 @@ interface Rsvp {
   email?: string;
   phone?: string;
   observations?: string;
+  song_suggestions?: string;
   confirmed_attendance: boolean;
   not_attending: boolean;
 }
@@ -132,7 +133,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
   const handleDownload = () => {
     // Lógica para descargar Excel
-    const headers = ['Nombres', 'Participantes', 'Email', 'Teléfono', 'Observaciones', 'Asistencia Confirmada'];
+    const headers = ['Nombres', 'Participantes', 'Email', 'Teléfono', 'Observaciones', 'Sugerencias de Canciones', 'Asistencia Confirmada'];
     const csvContent = headers.join(';') + '\n' + rsvps.map(e => {
       // Formatear los nombres para que se muestren como una cadena separada por comas
       let names = 'N/A';
@@ -160,6 +161,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
         `"${e.email || 'N/A'}"`,
         `"${e.phone || 'N/A'}"`,
         `"${e.observations || 'N/A'}"`,
+        `"${e.song_suggestions || 'N/A'}"`,
         `"${e.confirmed_attendance ? 'Sí' : 'No'}"`
       ].join(';');
     }).join('\n');
@@ -196,6 +198,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
               <th>Email</th>
               <th>Teléfono</th>
               <th>Observaciones</th>
+              <th>Sugerencias de Canciones</th>
               <th>Asistencia</th>
             </tr>
           </thead>
@@ -228,6 +231,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
                 <td>{rsvp.email || 'N/A'}</td>
                 <td>{rsvp.phone || 'N/A'}</td>
                 <td>{rsvp.observations || 'N/A'}</td>
+                <td>{rsvp.song_suggestions || 'N/A'}</td>
                 <td>{rsvp.confirmed_attendance ? 'Sí' : 'No'}</td>
               </tr>
             ))}

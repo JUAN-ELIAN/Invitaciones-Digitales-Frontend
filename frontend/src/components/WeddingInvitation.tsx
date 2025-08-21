@@ -1,13 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
-import styled from 'styled-components';
-import { format, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
+import styled, { keyframes } from 'styled-components';
+import {
+  format,
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+} from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useParams } from 'react-router-dom'; // Importar useParams
 import Button from './Button';
 import { RsvpFormModal } from './RsvpFormModal';
 import { LuChurch } from 'react-icons/lu';
 import { GiLinkedRings } from 'react-icons/gi';
-import { PiGiftFill } from 'react-icons/pi';
+import { PiGiftFill, PiCheersDuotone } from 'react-icons/pi';
 import { GiMusicSpell } from 'react-icons/gi'; // Importar el nuevo icono de música
 import { MdOutlinePlayCircle } from 'react-icons/md'; // Nuevo icono de play
 import { FaCirclePause } from 'react-icons/fa6'; // Nuevo icono de pausa
@@ -29,6 +35,7 @@ const InvitationContainer = styled.div`
   align-items: center;
   padding: 0; /* Eliminar padding horizontal para que los banners vayan de borde a borde */
   text-align: center;
+  position: relative; /* Para posicionar arreglos florales como fondo */
 
   @media (max-width: 768px) {
     padding: 0;
@@ -93,6 +100,10 @@ const InvitationMessage = styled.p`
   }
 `;
 
+const LocationMessage = styled(InvitationMessage)`
+  margin-bottom: 10px;
+`;
+
 const DateSection = styled.div`
   margin-top: 30px;
   font-family: 'Montserrat', sans-serif;
@@ -131,7 +142,7 @@ const CountdownContainer = styled.div`
 `;
 
 const CountdownItem = styled.div`
-  background-color: #C0B8B0; /* Tono más oscuro para el box del contador */
+  background-color: #c0b8b0; /* Tono más oscuro para el box del contador */
   padding: 15px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -166,7 +177,12 @@ const CountdownLabel = styled.span`
 
 const CountdownBanner = styled.div`
   width: 100%;
-  background-color: rgba(220, 214, 207, 0.7); /* Revertido al color original con opacidad */
+  background-color: rgba(
+    220,
+    214,
+    207,
+    0.7
+  ); /* Revertido al color original con opacidad */
   padding: 30px 20px;
   margin-top: 20px; /* Espacio para que empiece después de la leyenda de la fecha */
   box-sizing: border-box;
@@ -180,6 +196,45 @@ const LocationSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 280px;
+  gap: 6px;
+`;
+
+const LocationsRow = styled.div`
+  width: 100%;
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
+`;
+
+const LocationButton = styled(Button)`
+  align-self: center;
+  margin-top: 10px;
+`;
+
+const SectionHeading = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 5px 0;
+  color: var(--color-text-secondary);
+`;
+
+const SectionSubheading = styled.p`
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1em;
+  margin: 5px 0 10px 0;
+  color: var(--color-text-secondary);
 `;
 
 const LocationIcon = styled.div`
@@ -193,6 +248,11 @@ const AddressText = styled.p`
   font-weight: bold;
   margin-bottom: 20px;
   white-space: pre-line; // Allow line breaks
+  text-align: center;
+  line-height: 1.5;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
 
   @media (max-width: 768px) {
     font-size: 1.1em;
@@ -205,7 +265,12 @@ const RsvpButton = styled(Button)`
 
 const GiftSection = styled.div`
   width: 100%;
-  background-color: rgba(220, 214, 207, 0.7); /* Color del banner del contador para consistencia */
+  background-color: rgba(
+    220,
+    214,
+    207,
+    0.7
+  ); /* Color del banner del contador para consistencia */
   padding: 40px 20px;
   margin-top: 40px;
   box-sizing: border-box;
@@ -230,10 +295,21 @@ interface ImageRotatorProps {
   opacity: number;
 }
 
-const ImageRotator: React.FC<ImageRotatorProps> = ({ imageSrc, transitionDuration = 1000, opacity }) => {
+const ImageRotator: React.FC<ImageRotatorProps> = ({
+  imageSrc,
+  transitionDuration = 1000,
+  opacity,
+}) => {
   return (
     <ImageCubicle>
-      <DynamicImage src={imageSrc} alt="Nuestros momentos" style={{ opacity: opacity, transition: `opacity ${transitionDuration / 1000}s ease-in-out` }} />
+      <DynamicImage
+        src={imageSrc}
+        alt="Nuestros momentos"
+        style={{
+          opacity: opacity,
+          transition: `opacity ${transitionDuration / 1000}s ease-in-out`,
+        }}
+      />
     </ImageCubicle>
   );
 };
@@ -277,7 +353,9 @@ const ImageCubicle = styled.div`
   overflow: hidden;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: var(--color-bg-secondary); /* Color de fondo para los cubículos */
+  background-color: var(
+    --color-bg-secondary
+  ); /* Color de fondo para los cubículos */
 `;
 
 const DynamicImage = styled.img`
@@ -290,7 +368,15 @@ const DynamicImage = styled.img`
   filter: brightness(1.1) contrast(1.05) saturate(1.05) blur(0.2px); /* Efecto de luz difuminado */
 `;
 
-const MusicControlContainer = styled.div`
+const heartbeat = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.2); }
+  25% { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(0,0,0,0.12); }
+  40% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.0); }
+  60% { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(0,0,0,0.12); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.0); }
+`;
+
+const MusicControlContainer = styled.div<{ $playing: boolean }>`
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -303,6 +389,8 @@ const MusicControlContainer = styled.div`
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
+  animation: ${heartbeat} 1.4s ease-in-out infinite;
+  animation-play-state: ${(p) => (p.$playing ? 'running' : 'paused')};
 `;
 
 const MusicIcon = styled.div`
@@ -316,20 +404,96 @@ const PlayPauseIcon = styled.div`
   margin-left: 10px;
 `;
 
+const scrollVertical = keyframes`
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+`;
+
+const FloralColumn = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  overflow: hidden; /* Evitar que el track genere scroll fuera del contenedor */
+  pointer-events: none;
+  z-index: 1; /* Más visible que el fondo, detrás del contenido */
+  @media (max-width: 992px) {
+    width: 160px;
+  }
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const FloralColumnLeft = styled(FloralColumn)`
+  left: 0;
+`;
+
+const FloralColumnRight = styled(FloralColumn)`
+  right: 0;
+`;
+
+const FloralTrack = styled.div<{ $playing: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  animation: ${scrollVertical} 45s linear infinite;
+  animation-play-state: ${(p) => (p.$playing ? 'running' : 'paused')};
+`;
+
+const FloralImg = styled.img`
+  width: 100%;
+  height: auto;
+  margin-bottom: 12px;
+`;
+
+const ContentWrapper = styled.div`
+  position: relative;
+  z-index: 2; /* Por encima de los arreglos florales */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Footer = styled.footer`
+  width: 100%;
+  padding: 16px 12px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  opacity: 0.85;
+`;
+
 const INVITATION_DATA = {
   title: 'Nuestra Boda',
   names: 'Antonio y Vanesa',
   welcomeMessage: '¡No faltes en este día tan especial!',
-  date: '2025-12-06T22:30:00',
-  location: 'Fray Luis Beltrán 64, B1623,\nMaquinista Savio,\nProvincia de Buenos Aires',
-  googleMapsLink: 'https://maps.google.com/?q=Fray+Luis+Beltrán+64,+B1623,+Maquinista+Savio,+Provincia+de+Buenos+Aires',
+  date: '2025-12-06T20:20:00',
+  location:
+    'Portugal 2300 1646, B1645BQH San Fernando, Provincia de Buenos Aires',
+  googleMapsLink:
+    'https://maps.google.com/?q=Portugal+2300+1646,+B1645BQH+San+Fernando,+Provincia+de+Buenos+Aires',
+  partyLocation:
+    'Fray Luis Beltrán 64, B1623 Maquinista Savio, Provincia de Buenos Aires',
+  partyGoogleMapsLink:
+    'https://maps.google.com/?q=Fray+Luis+Beltrán+64,+B1623+Maquinista+Savio,+Provincia+de+Buenos+Aires',
   music_url: '/waiting for the weekend (Remix).mp3',
 };
 
 const WeddingInvitation: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // Obtener id de los parámetros de la URL
   const [invitation, setInvitation] = useState<any>(null); // Estado para almacenar los datos de la invitación
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isRsvpModalOpen, setIsRsvpModalOpen] = useState(false);
@@ -386,7 +550,8 @@ const WeddingInvitation: React.FC = () => {
           setTimeout(() => {
             setCurrentImageIndices((prevIndices) => {
               const newIndices = [...prevIndices];
-              newIndices[i] = (newIndices[i] + numCubicles) % allCarouselImages.length; // Move to the next image in this cubicle's sequence
+              newIndices[i] =
+                (newIndices[i] + numCubicles) % allCarouselImages.length; // Move to the next image in this cubicle's sequence
               return newIndices;
             });
             setOpacities((prevOpacities) => {
@@ -404,14 +569,21 @@ const WeddingInvitation: React.FC = () => {
     }
 
     return () => {
-      timers.forEach(timer => clearInterval(timer)); // Clear all timers on unmount
+      timers.forEach((timer) => clearInterval(timer)); // Clear all timers on unmount
     };
-  }, [allCarouselImages.length, numCubicles, totalCycleTime, transitionDuration]);
+  }, [
+    allCarouselImages.length,
+    numCubicles,
+    totalCycleTime,
+    transitionDuration,
+  ]);
 
   useEffect(() => {
     const fetchInvitation = async () => {
       try {
-        const response = await fetch(`https://invitaciones-digitales-backend.vercel.app/api/invitation/${id}`); // Usar 'id'
+        const response = await fetch(
+          `https://invitaciones-digitales-backend.vercel.app/api/invitation/${id}`
+        ); // Usar 'id'
         if (!response.ok) {
           throw new Error('Invitación no encontrada');
         }
@@ -423,52 +595,138 @@ const WeddingInvitation: React.FC = () => {
       }
     };
 
-    if (id) { // Usar 'id'
+    if (id) {
+      // Usar 'id'
       fetchInvitation();
     }
   }, [id]); // Usar 'id'
 
   useEffect(() => {
     const eventDate = new Date(INVITATION_DATA.date); // Usar la fecha de INVITATION_DATA
-    
+
     const updateCountdown = () => {
       const now = new Date();
       const totalSeconds = differenceInSeconds(eventDate, now);
-      
+
       if (totalSeconds <= 0) {
         setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
       }
-      
+
       const days = differenceInDays(eventDate, now);
       const totalHours = differenceInHours(eventDate, now);
       const hours = totalHours % 24;
       const totalMinutes = differenceInMinutes(eventDate, now);
       const minutes = totalMinutes % 60;
       const seconds = totalSeconds % 60;
-      
-      
+
       setCountdown({ days, hours, minutes, seconds });
     };
-    
+
     // Ejecutar inmediatamente
     updateCountdown();
-    
+
     // Configurar el intervalo
     const interval = setInterval(updateCountdown, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const handleMapRedirect = () => {
-    window.open(INVITATION_DATA.googleMapsLink, '_blank');
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(INVITATION_DATA.location)}`;
+    window.open(url, '_blank');
   };
+
+  const handlePartyMapRedirect = () => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(INVITATION_DATA.partyLocation)}`;
+    window.open(url, '_blank');
+  };
+
+  const renderAddress = (addr: string): React.ReactNode => {
+    const province = 'Provincia de Buenos Aires';
+    const subMarkers = ['B1645BQH San Fernando', 'B1623 Maquinista Savio'];
+    const provinceIdx = addr.indexOf(province);
+    if (provinceIdx !== -1) {
+      const beforeProvince = addr
+        .slice(0, provinceIdx)
+        .trim()
+        .replace(/,\s*$/, '');
+      const foundSub = subMarkers.find((s) => beforeProvince.includes(s));
+      if (foundSub) {
+        const cityIdx = beforeProvince.indexOf(foundSub);
+        const street = beforeProvince
+          .slice(0, cityIdx)
+          .trim()
+          .replace(/,\s*$/, '');
+        return (
+          <>
+            {street}, <br />
+            {foundSub}, <br />
+            {province}
+          </>
+        );
+      }
+      return (
+        <>
+          {beforeProvince},<br />
+          {province}
+        </>
+      );
+    }
+    return addr;
+  };
+
+  useEffect(() => {
+    let gestureHandler: ((e: Event) => void) | null = null;
+
+    const tryAutoplay = async () => {
+      if (!audioRef.current) return;
+      try {
+        audioRef.current.muted = false;
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (err) {
+        try {
+          // Intento 2: reproducir silenciado (permitido por policy)
+          audioRef.current.muted = true;
+          await audioRef.current.play();
+          setIsPlaying(true);
+          // Al primer gesto, quitar mute
+          gestureHandler = () => {
+            if (!audioRef.current) return;
+            audioRef.current.muted = false;
+            document.removeEventListener('pointerdown', gestureHandler as any);
+          };
+          document.addEventListener('pointerdown', gestureHandler as any, { once: true } as any);
+        } catch (err2) {
+          // Si también falla, esperar el primer gesto para reproducir con sonido
+          gestureHandler = async () => {
+            if (!audioRef.current) return;
+            try {
+              audioRef.current.muted = false;
+              await audioRef.current.play();
+              setIsPlaying(true);
+            } catch {}
+            document.removeEventListener('pointerdown', gestureHandler as any);
+          };
+          document.addEventListener('pointerdown', gestureHandler as any, { once: true } as any);
+        }
+      }
+    };
+
+    tryAutoplay();
+
+    return () => {
+      if (gestureHandler) document.removeEventListener('pointerdown', gestureHandler as any);
+    };
+  }, []);
 
   const toggleMusic = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
+        audioRef.current.muted = false;
         audioRef.current.play();
       }
       setIsPlaying(!isPlaying);
@@ -482,16 +740,19 @@ const WeddingInvitation: React.FC = () => {
     }
 
     try {
-      const response = await fetch('https://invitaciones-digitales-backend.vercel.app/api/rsvp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          invitation_id: invitation.id, // Usar el ID de la invitación cargada
-        }),
-      });
+      const response = await fetch(
+        'https://invitaciones-digitales-backend.vercel.app/api/rsvp',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            invitation_id: invitation.id, // Usar el ID de la invitación cargada
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -509,89 +770,167 @@ const WeddingInvitation: React.FC = () => {
 
   return (
     <InvitationContainer>
-      <HeaderBanner src="/carrucel/Foto Encabezado.png" alt="Banner de Cabecera" />
-      <Title>{INVITATION_DATA.title}</Title>
-      <Title>{INVITATION_DATA.names}</Title>
-      <Subtitle>{INVITATION_DATA.welcomeMessage}</Subtitle>
-      <RingsSection>
-        <RingsIcon>{GiLinkedRings({})}</RingsIcon>
-        <InvitationMessage>Tenemos el gusto de invitarte en este día tan importante de nuestras vidas</InvitationMessage>
-      </RingsSection>
-      <CountdownBanner>
-        <DateSection>
-          <DateText>Los esperamos</DateText>
-          <TimeText>{format(new Date(INVITATION_DATA.date), 'MMMM dd', { locale: es }).toUpperCase()} a las {format(new Date(INVITATION_DATA.date), 'HH:mm')} horas</TimeText>
-        </DateSection>
-        <CountdownContainer>
-          <CountdownItem>
-            <CountdownNumber>{countdown.days}</CountdownNumber>
-            <CountdownLabel>Días</CountdownLabel>
-          </CountdownItem>
-          <CountdownItem>
-            <CountdownNumber>{countdown.hours}</CountdownNumber>
-            <CountdownLabel>Horas</CountdownLabel>
-          </CountdownItem>
-          <CountdownItem>
-            <CountdownNumber>{countdown.minutes}</CountdownNumber>
-            <CountdownLabel>Minutos</CountdownLabel>
-          </CountdownItem>
-          <CountdownItem>
-            <CountdownNumber>{countdown.seconds}</CountdownNumber>
-            <CountdownLabel>Segundos</CountdownLabel>
-          </CountdownItem>
-        </CountdownContainer>
-      </CountdownBanner>
-      <InvitationMessage>
-        ¡Gracias por acompañarnos en este momento tan importante! <br />
-        Esperamos que seas parte de esta gran celebración. <br />
-        ¡Te esperamos!
-      </InvitationMessage>
-      <RsvpButton $primary onClick={() => setIsRsvpModalOpen(true)}>Confirmar Asistencia</RsvpButton>
-      <LocationSection>
-        <LocationIcon>{LuChurch({})}</LocationIcon>
-        <AddressText>{INVITATION_DATA.location}</AddressText>
-        <Button $primary onClick={handleMapRedirect}>Como Llegar</Button>
-      </LocationSection>
-
-      <AboutUsSection>
-        <AboutUsTitle>NOSOTROS</AboutUsTitle>
-        <ImageGrid>         
-          {/* Cubículos de imágenes dinámicas */}
-          {Array.from({ length: numCubicles }).map((_, i) => (
-            <ImageRotator
-              key={i}
-              imageSrc={allCarouselImages[currentImageIndices[i]]}
-              opacity={opacities[i]}
-              transitionDuration={transitionDuration}
-            />
+      <FloralColumnLeft>
+        <FloralTrack $playing={isPlaying}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <FloralImg key={`L1-${i}`} src="/carrucel/ArregloFloral_left.png" alt="" />
           ))}
-        </ImageGrid>
-      </AboutUsSection>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <FloralImg key={`L2-${i}`} src="/carrucel/ArregloFloral_left.png" alt="" />
+          ))}
+        </FloralTrack>
+      </FloralColumnLeft>
+      <FloralColumnRight>
+        <FloralTrack $playing={isPlaying}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <FloralImg key={`R1-${i}`} src="/carrucel/ArregloFloral_right.png" alt="" />
+          ))}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <FloralImg key={`R2-${i}`} src="/carrucel/ArregloFloral_right.png" alt="" />
+          ))}
+        </FloralTrack>
+      </FloralColumnRight>
+      <ContentWrapper>
+        <HeaderBanner
+          src="/carrucel/Foto Encabezado.png"
+          alt="Banner de Cabecera"
+        />
+        <Title>{INVITATION_DATA.title}</Title>
+        <Title>{INVITATION_DATA.names}</Title>
+        <Subtitle>{INVITATION_DATA.welcomeMessage}</Subtitle>
+        <RingsSection>
+          <RingsIcon>{GiLinkedRings({})}</RingsIcon>
+          <InvitationMessage>
+            ¡Tenemos el gusto de invitarte!
+            <br />
+            ¡En este día tan importante de nuestras vidas!
+            <br />
+            ¡Para celebrar nuestra unión!
+          </InvitationMessage>
+        </RingsSection>
+        <CountdownBanner>
+          <DateSection>
+            <DateText>LA BODA SE CELEBRARÁ EL DÍA</DateText>
+            <TimeText>
+              {format(new Date(INVITATION_DATA.date), 'MMMM dd', {
+                locale: es,
+              }).toUpperCase()}{' '}
+              a las {format(new Date(INVITATION_DATA.date), 'HH:mm')} horas
+            </TimeText>
+          </DateSection>
+          <CountdownContainer>
+            <CountdownItem>
+              <CountdownNumber>{countdown.days}</CountdownNumber>
+              <CountdownLabel>Días</CountdownLabel>
+            </CountdownItem>
+            <CountdownItem>
+              <CountdownNumber>{countdown.hours}</CountdownNumber>
+              <CountdownLabel>Horas</CountdownLabel>
+            </CountdownItem>
+            <CountdownItem>
+              <CountdownNumber>{countdown.minutes}</CountdownNumber>
+              <CountdownLabel>Minutos</CountdownLabel>
+            </CountdownItem>
+            <CountdownItem>
+              <CountdownNumber>{countdown.seconds}</CountdownNumber>
+              <CountdownLabel>Segundos</CountdownLabel>
+            </CountdownItem>
+          </CountdownContainer>
+          <DateText>CÓDIGO DE VESTIMENTA, FORMAL ELEGANTE</DateText>
+        </CountdownBanner>
+        <InvitationMessage>
+          ¡Gracias por acompañarnos en este momento tan importante! <br />
+          Esperamos que seas parte de esta gran celebración. <br />
+          ¡Confirma Tu Asistencia! <br />
+          ¡Te esperamos!
+        </InvitationMessage>
+        <RsvpButton $primary onClick={() => setIsRsvpModalOpen(true)}>
+          Confirmar Asistencia
+        </RsvpButton>
+        <LocationsRow>
+          <LocationSection>
+            <LocationIcon>{LuChurch({})}</LocationIcon>
+            <LocationMessage>
+              La ceremonia se celebrará en
+              <br />
+              La Parroquia Nuestra Señora de Itatí
+              <br />
+              a las 20:20 horas
+              <br />
+              {renderAddress(INVITATION_DATA.location)}
+            </LocationMessage>
+            <LocationButton $primary onClick={handleMapRedirect}>
+              Como Llegar
+            </LocationButton>
+          </LocationSection>
+          <LocationSection>
+            <LocationIcon>{PiCheersDuotone({})}</LocationIcon>
+            <LocationMessage>
+              La Fiesta se celebrará en
+              <br />
+              La 5ta Eventos
+              <br />
+              a las 22:30 horas
+              <br />
+              {renderAddress(INVITATION_DATA.partyLocation)}
+            </LocationMessage>
+            <LocationButton $primary onClick={handlePartyMapRedirect}>
+              Como Llegar
+            </LocationButton>
+          </LocationSection>
+        </LocationsRow>
 
-      {/* Sección de Regalo */}
-      <GiftSection>
-        <GiftIcon>{PiGiftFill({})}</GiftIcon> {/* Nuevo icono de regalo */}
-        <GiftMessage>
-          Esperamos que seas parte de esta gran celebración.<br />
-          Si deseas realizar un regalo, podes colaborar con nuestra Luna de Miel
-        </GiftMessage>
-        <Button $primary onClick={() => setIsGiftModalOpen(true)}>Da tu Regalo</Button>
-      </GiftSection>
+        <AboutUsSection>
+          <AboutUsTitle>NOSOTROS</AboutUsTitle>
+          <ImageGrid>
+            {/* Cubículos de imágenes dinámicas */}
+            {Array.from({ length: numCubicles }).map((_, i) => (
+              <ImageRotator
+                key={i}
+                imageSrc={allCarouselImages[currentImageIndices[i]]}
+                opacity={opacities[i]}
+                transitionDuration={transitionDuration}
+              />
+            ))}
+          </ImageGrid>
+        </AboutUsSection>
 
-      <MusicControlContainer onClick={toggleMusic}>
-        <MusicIcon>{GiMusicSpell({})}</MusicIcon>
-        <PlayPauseIcon>{React.createElement(isPlaying ? FaCirclePause as React.ComponentType : MdOutlinePlayCircle as React.ComponentType)}</PlayPauseIcon>
-        <audio ref={audioRef} src={INVITATION_DATA.music_url} loop />
-      </MusicControlContainer>
-      <RsvpFormModal
-        isOpen={isRsvpModalOpen}
-        onClose={() => setIsRsvpModalOpen(false)}
-        onSubmit={handleRsvpSubmit}
-      />
-      <GiftModal
-        isOpen={isGiftModalOpen}
-        onClose={() => setIsGiftModalOpen(false)}
-      />
+        {/* Sección de Regalo */}
+        <GiftSection>
+          <GiftIcon>{PiGiftFill({})}</GiftIcon> {/* Nuevo icono de regalo */}
+          <GiftMessage>
+            Esperamos que seas parte de esta gran celebración.
+            <br />
+            Si deseas realizar un regalo, <br />
+            podes colaborar con nuestra Luna de Miel
+          </GiftMessage>
+          <Button $primary onClick={() => setIsGiftModalOpen(true)}>
+            Da tu Regalo
+          </Button>
+        </GiftSection>
+
+        <MusicControlContainer onClick={toggleMusic} $playing={isPlaying}>
+          <MusicIcon>{GiMusicSpell({})}</MusicIcon>
+          <PlayPauseIcon>
+            {React.createElement(
+              isPlaying
+                ? (FaCirclePause as React.ComponentType)
+                : (MdOutlinePlayCircle as React.ComponentType)
+            )}
+          </PlayPauseIcon>
+          <audio ref={audioRef} src={INVITATION_DATA.music_url} loop autoPlay preload="auto" playsInline />
+        </MusicControlContainer>
+        <RsvpFormModal
+          isOpen={isRsvpModalOpen}
+          onClose={() => setIsRsvpModalOpen(false)}
+          onSubmit={handleRsvpSubmit}
+        />
+        <GiftModal
+          isOpen={isGiftModalOpen}
+          onClose={() => setIsGiftModalOpen(false)}
+        />
+        <Footer>© {new Date().getFullYear()} Digital Invitations — Todos los derechos reservados.</Footer>
+      </ContentWrapper>
     </InvitationContainer>
   );
 };
