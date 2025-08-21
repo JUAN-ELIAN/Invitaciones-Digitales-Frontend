@@ -417,11 +417,23 @@ const FloralColumn = styled.div`
   overflow: hidden; /* Evitar que el track genere scroll fuera del contenedor */
   pointer-events: none;
   z-index: 1; /* Más visible que el fondo, detrás del contenido */
+  @media (max-width: 1200px) {
+    width: 180px;
+  }
   @media (max-width: 992px) {
-    width: 160px;
+    width: 140px;
   }
   @media (max-width: 768px) {
-    display: none;
+    width: 96px;
+    opacity: 0.65;
+  }
+  @media (max-width: 480px) {
+    width: 72px;
+    opacity: 0.55;
+  }
+  @media (max-width: 360px) {
+    width: 56px;
+    opacity: 0.5;
   }
 `;
 
@@ -676,40 +688,51 @@ const WeddingInvitation: React.FC = () => {
     return addr;
   };
 
+  const hasTriedAutoplay = useRef(false);
+  const gestureHandlerRef = useRef<((e: Event) => void) | null>(null);
+
   useEffect(() => {
-    let gestureHandler: ((e: Event) => void) | null = null;
+    if (hasTriedAutoplay.current) return;
+    hasTriedAutoplay.current = true;
 
     const tryAutoplay = async () => {
       if (!audioRef.current) return;
       try {
         audioRef.current.muted = false;
         await audioRef.current.play();
-        setIsPlaying(true);
+        // isPlaying se sincroniza con listeners abajo
       } catch (err) {
         try {
           // Intento 2: reproducir silenciado (permitido por policy)
           audioRef.current.muted = true;
           await audioRef.current.play();
-          setIsPlaying(true);
-          // Al primer gesto, quitar mute
-          gestureHandler = () => {
-            if (!audioRef.current) return;
-            audioRef.current.muted = false;
-            document.removeEventListener('pointerdown', gestureHandler as any);
+          // Al primer gesto, quitar mute sin reiniciar
+          gestureHandlerRef.current = () => {
+            const a = audioRef.current;
+            if (!a) return;
+            a.muted = false;
+            document.removeEventListener('pointerdown', gestureHandlerRef.current as any);
+            gestureHandlerRef.current = null;
           };
-          document.addEventListener('pointerdown', gestureHandler as any, { once: true } as any);
+          document.addEventListener('pointerdown', gestureHandlerRef.current as any, { once: true } as any);
         } catch (err2) {
-          // Si también falla, esperar el primer gesto para reproducir con sonido
-          gestureHandler = async () => {
-            if (!audioRef.current) return;
-            try {
-              audioRef.current.muted = false;
-              await audioRef.current.play();
-              setIsPlaying(true);
-            } catch {}
-            document.removeEventListener('pointerdown', gestureHandler as any);
+          // Si también falla, esperar primer gesto para reproducir con sonido
+          gestureHandlerRef.current = async () => {
+            const a = audioRef.current;
+            if (!a) return;
+            if (!a.paused) {
+              // Ya está reproduciendo, solo aseguramos no mute
+              a.muted = false;
+            } else {
+              try {
+                a.muted = false;
+                await a.play();
+              } catch {}
+            }
+            document.removeEventListener('pointerdown', gestureHandlerRef.current as any);
+            gestureHandlerRef.current = null;
           };
-          document.addEventListener('pointerdown', gestureHandler as any, { once: true } as any);
+          document.addEventListener('pointerdown', gestureHandlerRef.current as any, { once: true } as any);
         }
       }
     };
@@ -717,20 +740,36 @@ const WeddingInvitation: React.FC = () => {
     tryAutoplay();
 
     return () => {
-      if (gestureHandler) document.removeEventListener('pointerdown', gestureHandler as any);
+      if (gestureHandlerRef.current) {
+        document.removeEventListener('pointerdown', gestureHandlerRef.current as any);
+        gestureHandlerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    a.addEventListener('play', onPlay);
+    a.addEventListener('pause', onPause);
+    return () => {
+      a.removeEventListener('play', onPlay);
+      a.removeEventListener('pause', onPause);
     };
   }, []);
 
   const toggleMusic = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.muted = false;
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+    const a = audioRef.current;
+    if (!a) return;
+    if (!a.paused) {
+      a.pause();
+    } else {
+      a.muted = false;
+      a.play();
     }
+    // Estado sincronizado vía listeners 'play'/'pause'
   };
 
   const handleRsvpSubmit = async (formData: any) => {
