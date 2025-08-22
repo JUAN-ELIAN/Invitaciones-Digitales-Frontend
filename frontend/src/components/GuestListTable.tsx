@@ -84,6 +84,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalParticipants, setTotalParticipants] = useState(0);
+  const [totalNoParticipants, setTotalNoParticipants] = useState(0);
 
   useEffect(() => {
     const fetchRsvps = async () => {
@@ -119,6 +120,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
 
         setRsvps(data.rsvps || []);
         setTotalParticipants(data.participants_count || 0);
+        setTotalNoParticipants(data.not_attending_count || 0);
 
       } catch (err: any) {
         console.error('DEBUG (GuestListTable): Error en fetchRsvps:', err.message);
@@ -187,6 +189,7 @@ const GuestListTable: React.FC<GuestListTableProps> = ({ invitationId }) => {
   return (
     <TableContainer>
       <StyledTitle>Invitados Confirmados ({totalParticipants} personas)</StyledTitle>
+      <StyledTitle>No Confirmados ({totalNoParticipants} personas)</StyledTitle>
       {rsvps.length === 0 ? (
         <p>No hay invitados registrados para esta invitación.</p>
       ) : (
